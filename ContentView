@@ -1,0 +1,107 @@
+import SwiftUI
+
+struct ContentView: View {
+    // שמירת שם המשתמש בזיכרון של האפליקציה
+    @AppStorage("userName") var userName: String = ""
+    
+    // הצגת חלון קלט לשם
+    @State private var showNameInput = false
+
+    var body: some View {
+        VStack {
+            Spacer().frame(height: 40)
+            
+            // כפתור להוספת שם
+            Button("Insert name") {
+                showNameInput = true
+            }
+            .foregroundColor(.blue)
+            .underline()
+
+            Spacer().frame(height: 10)
+
+            // הצגת שם אם קיים
+            Text("Hi \(userName.isEmpty ? "Guest" : userName)")
+                .font(.title)
+                .padding(.bottom, 30)
+
+            // שתי תמונות של כדור הארץ – מזרח/מערב
+            HStack {
+                VStack {
+                    Image("earth_west")
+                        .resizable()
+                        .frame(width: 120, height: 120)
+                    Text("West Side")
+                }
+
+                Spacer()
+
+                VStack {
+                    Image("earth_east")
+                        .resizable()
+                        .frame(width: 120, height: 120)
+                    Text("East Side")
+                }
+            }
+            .padding(.horizontal, 40)
+
+            Spacer()
+
+            // כפתור התחל
+            Button("START") {
+                print("🔵 Moving to game screen (coming soon)")
+                // כאן נעשה ניווט בעתיד
+            }
+            .padding()
+            .foregroundColor(.white)
+            .frame(width: 200, height: 50)
+            .background(Color.blue)
+            .cornerRadius(10)
+
+            Spacer()
+        }
+        .padding()
+        .sheet(isPresented: $showNameInput) {
+            NameInputView(name: $userName)
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct NameInputView: View {
+    @Binding var name: String
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Enter your name")
+                .font(.headline)
+
+            TextField("Name", text: $name)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+
+            Button("Save") {
+                dismiss()
+            }
+            .padding()
+            .foregroundColor(.white)
+            .frame(width: 150, height: 40)
+            .background(Color.green)
+            .cornerRadius(10)
+        }
+        .padding()
+    }
+}
