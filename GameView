@@ -24,9 +24,9 @@ struct GameView: View {
 
     var body: some View {
         ZStack {
-            // רקע ברירת מחדל (לבן/שחור)
+            // רקע ברירת מחדל (לבן/שחור לפי מצב המערכת)
             VStack {
-                // ניקוד עם הדגשה למנצח
+                // ניקוד עם הדגשה
                 HStack {
                     VStack {
                         Text(userName)
@@ -51,7 +51,7 @@ struct GameView: View {
 
                 Spacer()
 
-                // קלפים עם מסגרת וצל
+                // קלפים עם רקע/ריחוף
                 HStack {
                     cardView(cardName: playerCardName)
                     Spacer()
@@ -61,11 +61,14 @@ struct GameView: View {
 
                 Spacer()
 
-                // טיימר
-                VStack {
+                // טיימר + סיבוב נוכחי
+                VStack(spacing: 8) {
                     Image(systemName: "timer")
                     Text("\(timerValue)")
                         .font(.title)
+                    Text("ROUND \(min(currentRound + 1, maxRounds))/\(maxRounds)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
 
                 Spacer()
@@ -118,7 +121,7 @@ struct GameView: View {
             return
         }
 
-        // שליפת קלפים
+        // שליפת קלפים רנדומליים
         let playerValue = cardValues.randomElement() ?? 2
         let pcValue = cardValues.randomElement() ?? 2
 
@@ -130,7 +133,12 @@ struct GameView: View {
 
         highlightWinner = nil
 
-        // המתנה של שנייה לפני עדכון ניקוד
+        // העברת סיבוב והתחלת טיימר חדש מיד
+        currentRound += 1
+        isFirstRound = false
+        startCountdown()
+
+        // עיכוב של שנייה ואז עידכון ניקוד עם אנימציה
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             withAnimation(.easeIn(duration: 0.4)) {
                 if playerValue > pcValue {
@@ -141,10 +149,6 @@ struct GameView: View {
                     highlightWinner = "pc"
                 }
             }
-
-            currentRound += 1
-            isFirstRound = false
-            startCountdown()
         }
     }
 
