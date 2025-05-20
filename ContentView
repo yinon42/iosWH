@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    // שמירה על שם המשתמש
     @AppStorage("userName") var userName: String = ""
     @State private var showNameInput = false
 
@@ -8,6 +9,7 @@ struct ContentView: View {
         VStack {
             Spacer().frame(height: 40)
 
+            // כפתור להוספת/שינוי שם
             Button("Insert name") {
                 showNameInput = true
             }
@@ -16,13 +18,15 @@ struct ContentView: View {
 
             Spacer().frame(height: 10)
 
+            // ברכה עם שם
             Text("Hi \(userName.isEmpty ? "Guest" : userName)")
                 .font(.title)
                 .padding(.bottom, 30)
 
+            // תמונות של כדור הארץ – מתחלפות לפי מצב יום/לילה
             HStack {
                 VStack {
-                    Image("earth_west")
+                    Image("earth_left") // סט תמונה שתומך ב־Light/Dark Mode
                         .resizable()
                         .frame(width: 120, height: 120)
                     Text("West Side")
@@ -31,7 +35,7 @@ struct ContentView: View {
                 Spacer()
 
                 VStack {
-                    Image("earth_east")
+                    Image("earth_right") // סט תמונה שתומך ב־Light/Dark Mode
                         .resizable()
                         .frame(width: 120, height: 120)
                     Text("East Side")
@@ -41,8 +45,10 @@ struct ContentView: View {
 
             Spacer()
 
+            // כפתור התחל
             Button("START") {
                 print("Start pressed")
+                // בהמשך: ננווט למסך המשחק
             }
             .padding()
             .foregroundColor(.white)
