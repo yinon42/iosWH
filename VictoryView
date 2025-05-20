@@ -3,6 +3,7 @@ import SwiftUI
 struct VictoryView: View {
     let winnerName: String
     let winnerScore: Int
+    let onPlayAgain: () -> Void
     let onBackToMenu: () -> Void
 
     var body: some View {
@@ -19,6 +20,17 @@ struct VictoryView: View {
             Spacer()
 
             Button(action: {
+                onPlayAgain()
+            }) {
+                Text("PLAY AGAIN")
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(width: 200)
+                    .background(Color.green)
+                    .cornerRadius(10)
+            }
+
+            Button(action: {
                 onBackToMenu()
             }) {
                 Text("BACK TO MENU")
@@ -32,13 +44,5 @@ struct VictoryView: View {
             Spacer()
         }
         .padding()
-    }
-}
-
-struct VictoryView_Previews: PreviewProvider {
-    static var previews: some View {
-        VictoryView(winnerName: "Gabi", winnerScore: 10) {
-            print("Back to menu")
-        }
     }
 }
