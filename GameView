@@ -5,7 +5,7 @@ struct GameView: View {
 
     @State private var playerScore = 0
     @State private var pcScore = 0
-    @State private var currentRound = 0
+    @State private var currentRound = -1 // כדי לא להציג ROUND בהתחלה
 
     @State private var playerCardName = "back"
     @State private var pcCardName = "back"
@@ -15,18 +15,17 @@ struct GameView: View {
     @State private var timerValue = 5
     @State private var isFirstRound = true
     @State private var countdownTimer: Timer?
-    @State private var gameEnded = false
-    @State private var winnerText = ""
     @State private var highlightWinner: String? = nil
+
+    @State private var showVictoryScreen = false
 
     let cardValues = Array(2...14)
     let maxRounds = 10
 
     var body: some View {
         ZStack {
-            // רקע ברירת מחדל (לבן/שחור לפי מצב המערכת)
             VStack {
-                // ניקוד עם הדגשה
+                // ניקוד
                 HStack {
                     VStack {
                         Text(userName)
@@ -51,7 +50,7 @@ struct GameView: View {
 
                 Spacer()
 
-                // קלפים עם רקע/ריחוף
+                // קלפים
                 HStack {
                     cardView(cardName: playerCardName)
                     Spacer()
@@ -61,14 +60,16 @@ struct GameView: View {
 
                 Spacer()
 
-                // טיימר + סיבוב נוכחי
+                // טיימר + סיבוב
                 VStack(spacing: 8) {
                     Image(systemName: "timer")
                     Text("\(timerValue)")
                         .font(.title)
-                    Text("ROUND \(min(currentRound + 1, maxRounds))/\(maxRounds)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    if currentRound >= 0 {
+                        Text("ROUND \(min(currentRound + 1, maxRounds))/\(maxRounds)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
 
                 Spacer()
@@ -78,15 +79,19 @@ struct GameView: View {
         .onAppear {
             startCountdown()
         }
-        .alert(isPresented: $gameEnded) {
-            Alert(
-                title: Text("Game Over"),
-                message: Text(winnerText),
-                dismissButton: .default(Text("Back"))
+        .fullScreenCover(isPresented: $showVictoryScreen) {
+            VictoryView(
+                winnerName: getWinnerName(),
+                winnerScore: max(playerScore, pcScore),
+                onBackToMenu: {
+                    showVictoryScreen = false
+                    // אפשרות: הוספת ניווט חזרה
+                }
             )
         }
     }
 
+    // מבט לקלף
     func cardView(cardName: String) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
@@ -101,6 +106,7 @@ struct GameView: View {
         .frame(width: 120, height: 180)
     }
 
+    // טיימר
     func startCountdown() {
         timerValue = isFirstRound ? 5 : 3
         countdownTimer?.invalidate()
@@ -115,13 +121,13 @@ struct GameView: View {
         }
     }
 
+    // סיבוב חדש
     func showNextRound() {
-        guard currentRound < maxRounds else {
+        if (currentRound + 1) >= maxRounds {
             endGame()
             return
         }
 
-        // שליפת קלפים רנדומליים
         let playerValue = cardValues.randomElement() ?? 2
         let pcValue = cardValues.randomElement() ?? 2
 
@@ -133,12 +139,10 @@ struct GameView: View {
 
         highlightWinner = nil
 
-        // העברת סיבוב והתחלת טיימר חדש מיד
         currentRound += 1
         isFirstRound = false
         startCountdown()
 
-        // עיכוב של שנייה ואז עידכון ניקוד עם אנימציה
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             withAnimation(.easeIn(duration: 0.4)) {
                 if playerValue > pcValue {
@@ -152,16 +156,20 @@ struct GameView: View {
         }
     }
 
+    // סיום המשחק
     func endGame() {
-        gameEnded = true
         countdownTimer?.invalidate()
+        showVictoryScreen = true
+    }
 
+    // קביעת שם המנצח
+    func getWinnerName() -> String {
         if playerScore > pcScore {
-            winnerText = "\(userName) wins! 🎉"
+            return userName
         } else if pcScore > playerScore {
-            winnerText = "PC wins! 🤖"
+            return "PC"
         } else {
-            winnerText = "It's a tie!"
+            return "Tie"
         }
     }
 }
