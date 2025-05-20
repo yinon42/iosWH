@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GameView: View {
     @AppStorage("userName") var userName: String = "Player"
+    @AppStorage("userSide") var userSide: String = "West" // "East" או "West"
 
     @Environment(\.dismiss) var dismiss
 
@@ -18,7 +19,6 @@ struct GameView: View {
     @State private var isFirstRound = true
     @State private var countdownTimer: Timer?
     @State private var highlightWinner: String? = nil
-
     @State private var showVictoryScreen = false
 
     let cardValues = Array(2...14)
@@ -27,24 +27,16 @@ struct GameView: View {
     var body: some View {
         ZStack {
             VStack {
-                // ניקוד
+                // ניקוד – ימין או שמאל לפי הצד
                 HStack {
-                    VStack {
-                        Text(userName)
-                        Text("\(playerScore)")
-                            .font(.title)
-                            .bold()
-                            .scaleEffect(highlightWinner == "player" ? 1.3 : 1.0)
-                            .animation(.easeInOut, value: highlightWinner)
-                    }
-                    Spacer()
-                    VStack {
-                        Text("PC")
-                        Text("\(pcScore)")
-                            .font(.title)
-                            .bold()
-                            .scaleEffect(highlightWinner == "pc" ? 1.3 : 1.0)
-                            .animation(.easeInOut, value: highlightWinner)
+                    if userSide == "West" {
+                        playerColumn(name: userName, score: playerScore, highlight: highlightWinner == "player")
+                        Spacer()
+                        playerColumn(name: "PC", score: pcScore, highlight: highlightWinner == "pc")
+                    } else {
+                        playerColumn(name: "PC", score: pcScore, highlight: highlightWinner == "pc")
+                        Spacer()
+                        playerColumn(name: userName, score: playerScore, highlight: highlightWinner == "player")
                     }
                 }
                 .padding(.horizontal, 30)
@@ -54,15 +46,21 @@ struct GameView: View {
 
                 // קלפים
                 HStack {
-                    cardView(cardName: playerCardName)
-                    Spacer()
-                    cardView(cardName: pcCardName)
+                    if userSide == "West" {
+                        cardView(cardName: playerCardName)
+                        Spacer()
+                        cardView(cardName: pcCardName)
+                    } else {
+                        cardView(cardName: pcCardName)
+                        Spacer()
+                        cardView(cardName: playerCardName)
+                    }
                 }
                 .padding(.horizontal, 40)
 
                 Spacer()
 
-                // טיימר + סיבוב
+                // טיימר וסיבוב
                 VStack(spacing: 8) {
                     Image(systemName: "timer")
                     Text("\(timerValue)")
@@ -85,17 +83,24 @@ struct GameView: View {
             VictoryView(
                 winnerName: getWinnerName(),
                 winnerScore: max(playerScore, pcScore),
-                onPlayAgain: {
-                    resetGame()
-                },
-                onBackToMenu: {
-                    dismiss()
-                }
+                onPlayAgain: { resetGame() },
+                onBackToMenu: { dismiss() }
             )
         }
     }
 
-    // הצגת קלפים עם מסגרת
+    // שחקן עם ניקוד
+    func playerColumn(name: String, score: Int, highlight: Bool) -> some View {
+        VStack {
+            Text(name)
+            Text("\(score)")
+                .font(.title)
+                .bold()
+                .scaleEffect(highlight ? 1.3 : 1.0)
+                .animation(.easeInOut, value: highlight)
+        }
+    }
+
     func cardView(cardName: String) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
@@ -110,7 +115,6 @@ struct GameView: View {
         .frame(width: 120, height: 180)
     }
 
-    // התחלת טיימר
     func startCountdown() {
         timerValue = isFirstRound ? 5 : 3
         countdownTimer?.invalidate()
@@ -125,7 +129,6 @@ struct GameView: View {
         }
     }
 
-    // מעבר לסיבוב חדש
     func showNextRound() {
         if (currentRound + 1) >= maxRounds {
             endGame()
@@ -140,7 +143,6 @@ struct GameView: View {
 
         playerCardName = "card\(playerValue)"
         pcCardName = "card\(pcValue)"
-
         highlightWinner = nil
 
         currentRound += 1
@@ -160,13 +162,11 @@ struct GameView: View {
         }
     }
 
-    // סיום המשחק
     func endGame() {
         countdownTimer?.invalidate()
         showVictoryScreen = true
     }
 
-    // התחלה מחדש
     func resetGame() {
         playerScore = 0
         pcScore = 0
@@ -179,7 +179,6 @@ struct GameView: View {
         startCountdown()
     }
 
-    // זיהוי המנצח
     func getWinnerName() -> String {
         if playerScore > pcScore {
             return userName
