@@ -8,7 +8,7 @@ struct ContentView: View {
     @State private var navigateToGame = false
     @StateObject private var locationManager = LocationManager()
 
-    let centerLongitude = 34.817546 // נקודת האמצע
+    let centerLongitude = 34.817546 // נקודת האמצע בין מזרח למערב
 
     var body: some View {
         NavigationStack {
@@ -35,7 +35,7 @@ struct ContentView: View {
 
                 Spacer().frame(height: 30)
 
-                // תמונות חצי כדור
+                // תמונות חצאי כדור
                 HStack {
                     VStack {
                         Image("earth_left")
@@ -67,21 +67,19 @@ struct ContentView: View {
                 .background(Color.blue)
                 .cornerRadius(10)
 
-                // ניווט ל־GameView
-                NavigationLink(destination: GameView(), isActive: $navigateToGame) {
-                    EmptyView()
-                }
-                .hidden()
-
                 Spacer()
             }
             .padding()
             .sheet(isPresented: $showNameInput) {
                 NameInputView(name: $userName)
             }
-            .onChange(of: locationManager.userLongitude) { newLongitude in
-                guard let long = newLongitude else { return }
-                userSide = long > centerLongitude ? "East" : "West"
+            .onChange(of: locationManager.userLongitude) {
+                if let long = locationManager.userLongitude {
+                    userSide = long > centerLongitude ? "East" : "West"
+                }
+            }
+            .navigationDestination(isPresented: $navigateToGame) {
+                GameView()
             }
         }
     }
@@ -113,6 +111,7 @@ struct NameInputView: View {
         .padding()
     }
 }
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
