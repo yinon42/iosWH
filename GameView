@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GameView: View {
     @AppStorage("userName") var userName: String = "Player"
+    @Environment(\.dismiss) var dismiss
 
     @State private var playerScore = 0
     @State private var pcScore = 0
@@ -83,12 +84,15 @@ struct GameView: View {
             VictoryView(
                 winnerName: getWinnerName(),
                 winnerScore: max(playerScore, pcScore),
+                onPlayAgain: {
+                    resetGame()
+                },
                 onBackToMenu: {
-                    showVictoryScreen = false
-                    // אפשרות: הוספת ניווט חזרה
+                    dismiss() // ← חוזר למסך הראשי
                 }
             )
-        }
+}
+
     }
 
     // מבט לקלף
@@ -172,4 +176,18 @@ struct GameView: View {
             return "Tie"
         }
     }
+
+    func resetGame() {
+        playerScore = 0
+        pcScore = 0
+        currentRound = -1
+        isFirstRound = true
+        playerCardName = "back"
+        pcCardName = "back"
+        highlightWinner = nil
+        showVictoryScreen = false
+        startCountdown()
+    }
+
+
 }
