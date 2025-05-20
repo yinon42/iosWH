@@ -1,0 +1,101 @@
+import SwiftUI
+
+struct GameView: View {
+    @AppStorage("userName") var userName: String = "Player"
+
+    @State private var playerScore = 0
+    @State private var pcScore = 0
+    @State private var currentRound = 0
+    @State private var playerCard = "back"
+    @State private var pcCard = "back"
+    @State private var timerValue = 3
+    @State private var gameEnded = false
+    @State private var winnerText = ""
+
+    let cardValues = Array(2...14)
+
+    let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        VStack {
+            HStack {
+                VStack {
+                    Text(userName)
+                    Text("\(playerScore)")
+                        .font(.title)
+                        .bold()
+                }
+                Spacer()
+                VStack {
+                    Text("PC")
+                    Text("\(pcScore)")
+                        .font(.title)
+                        .bold()
+                }
+            }
+            .padding(.horizontal, 30)
+            .padding(.top)
+
+            Spacer()
+
+            HStack {
+                Image("card\(playerCard)")
+                    .resizable()
+                    .frame(width: 120, height: 180)
+                Spacer()
+                Image("card\(pcCard)")
+                    .resizable()
+                    .frame(width: 120, height: 180)
+            }
+            .padding(.horizontal, 40)
+
+            Spacer()
+
+            VStack {
+                Image(systemName: "timer")
+                Text("\(timerValue)")
+                    .font(.title)
+            }
+
+            Spacer()
+        }
+        .onReceive(timer) { _ in
+            guard !gameEnded else { return }
+
+            if currentRound < 10 {
+                playRound()
+            } else {
+                endGame()
+            }
+        }
+        .alert(isPresented: $gameEnded) {
+            Alert(
+                title: Text("Game Over"),
+                message: Text(winnerText),
+                dismissButton: .default(Text("Back"))
+            )
+        }
+    }
+
+    func playRound() {
+        let playerValue = cardValues.randomElement() ?? 2
+        let pcValue = cardValues.randomElement() ?? 2
+
+        playerCard = "\(playerValue)"
+        pcCard = "\(pcValue)"
+
+        if playerValue > pcValue {
+            playerScore += 1
+        } else if pcValue > playerValue {
+            pcScore += 1
+        }
+
+        currentRound += 1
+    }
+
+    func endGame() {
+        gameEnded = true
+        if playerScore > pcScore {
+            winnerText = "\(userName) wins! 🎉"
+        } else if pcScore > playerScore {
+            winnerText = "PC wins! �
