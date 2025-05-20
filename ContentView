@@ -1,17 +1,13 @@
 import SwiftUI
 
 struct ContentView: View {
-    // שמירת שם המשתמש בזיכרון של האפליקציה
     @AppStorage("userName") var userName: String = ""
-    
-    // הצגת חלון קלט לשם
     @State private var showNameInput = false
 
     var body: some View {
         VStack {
             Spacer().frame(height: 40)
-            
-            // כפתור להוספת שם
+
             Button("Insert name") {
                 showNameInput = true
             }
@@ -20,12 +16,10 @@ struct ContentView: View {
 
             Spacer().frame(height: 10)
 
-            // הצגת שם אם קיים
             Text("Hi \(userName.isEmpty ? "Guest" : userName)")
                 .font(.title)
                 .padding(.bottom, 30)
 
-            // שתי תמונות של כדור הארץ – מזרח/מערב
             HStack {
                 VStack {
                     Image("earth_west")
@@ -47,10 +41,8 @@ struct ContentView: View {
 
             Spacer()
 
-            // כפתור התחל
             Button("START") {
-                print("🔵 Moving to game screen (coming soon)")
-                // כאן נעשה ניווט בעתיד
+                print("Start pressed")
             }
             .padding()
             .foregroundColor(.white)
@@ -66,19 +58,6 @@ struct ContentView: View {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 struct NameInputView: View {
     @Binding var name: String
