@@ -3,59 +3,68 @@ import SwiftUI
 struct ContentView: View {
     @AppStorage("userName") var userName: String = ""
     @State private var showNameInput = false
+    @State private var navigateToGame = false  // ← משתנה ניווט
 
     var body: some View {
-        VStack {
-            Spacer().frame(height: 40)
+        NavigationStack { // ← חובה לניווט
+            VStack {
+                Spacer().frame(height: 40)
 
-            Button("Insert name") {
-                showNameInput = true
-            }
-            .foregroundColor(.blue)
-            .underline()
-
-            Spacer().frame(height: 10)
-
-            Text("Hi \(userName.isEmpty ? "Guest" : userName)")
-                .font(.title)
-                .padding(.bottom, 30)
-
-            HStack {
-                VStack {
-                    Image("earth_left")
-                        .resizable()
-                        .frame(width: 120, height: 120)
-                    Text("West Side")
+                Button("Insert name") {
+                    showNameInput = true
                 }
+                .foregroundColor(.blue)
+                .underline()
+
+                Spacer().frame(height: 10)
+
+                Text("Hi \(userName.isEmpty ? "Guest" : userName)")
+                    .font(.title)
+                    .padding(.bottom, 30)
+
+                HStack {
+                    VStack {
+                        Image("earth_left")
+                            .resizable()
+                            .frame(width: 120, height: 120)
+                        Text("West Side")
+                    }
+
+                    Spacer()
+
+                    VStack {
+                        Image("earth_right")
+                            .resizable()
+                            .frame(width: 120, height: 120)
+                        Text("East Side")
+                    }
+                }
+                .padding(.horizontal, 40)
 
                 Spacer()
 
-                VStack {
-                    Image("earth_right")
-                        .resizable()
-                        .frame(width: 120, height: 120)
-                    Text("East Side")
+                // כפתור START
+                Button("START") {
+                    navigateToGame = true
                 }
-            }
-            .padding(.horizontal, 40)
+                .padding()
+                .foregroundColor(.white)
+                .frame(width: 200, height: 50)
+                .background(Color.blue)
+                .cornerRadius(10)
 
-            Spacer()
+                // ניווט ל־GameView כאשר navigateToGame = true
+                NavigationLink(destination: GameView(), isActive: $navigateToGame) {
+                    EmptyView()
+                }
+                .hidden()
 
-            Button("START") {
-                print("Start pressed")
-                // בהמשך נוסיף ניווט
+                Spacer()
             }
             .padding()
-            .foregroundColor(.white)
-            .frame(width: 200, height: 50)
-            .background(Color.blue)
-            .cornerRadius(10)
-
-            Spacer()
-        }
-        .padding()
-        .sheet(isPresented: $showNameInput) {
-            NameInputView(name: $userName)
+            .sheet(isPresented: $showNameInput) {
+                NameInputView(name: $userName)
+            }
         }
     }
 }
@@ -83,5 +92,11 @@ struct NameInputView: View {
             .cornerRadius(10)
         }
         .padding()
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
     }
 }
