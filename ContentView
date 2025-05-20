@@ -2,14 +2,20 @@ import SwiftUI
 
 struct ContentView: View {
     @AppStorage("userName") var userName: String = ""
+    @AppStorage("userSide") var userSide: String = "West" // East או West
+
     @State private var showNameInput = false
-    @State private var navigateToGame = false  // ← משתנה ניווט
+    @State private var navigateToGame = false
+    @StateObject private var locationManager = LocationManager()
+
+    let centerLongitude = 34.817546 // נקודת האמצע
 
     var body: some View {
-        NavigationStack { // ← חובה לניווט
+        NavigationStack {
             VStack {
                 Spacer().frame(height: 40)
 
+                // כפתור הכנסת שם
                 Button("Insert name") {
                     showNameInput = true
                 }
@@ -18,10 +24,18 @@ struct ContentView: View {
 
                 Spacer().frame(height: 10)
 
+                // ברכת שלום
                 Text("Hi \(userName.isEmpty ? "Guest" : userName)")
                     .font(.title)
-                    .padding(.bottom, 30)
 
+                // הצגת צד לפי מיקום
+                Text("You are on the \(userSide) Side")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+
+                Spacer().frame(height: 30)
+
+                // תמונות חצי כדור
                 HStack {
                     VStack {
                         Image("earth_left")
@@ -53,7 +67,7 @@ struct ContentView: View {
                 .background(Color.blue)
                 .cornerRadius(10)
 
-                // ניווט ל־GameView כאשר navigateToGame = true
+                // ניווט ל־GameView
                 NavigationLink(destination: GameView(), isActive: $navigateToGame) {
                     EmptyView()
                 }
@@ -65,10 +79,15 @@ struct ContentView: View {
             .sheet(isPresented: $showNameInput) {
                 NameInputView(name: $userName)
             }
+            .onChange(of: locationManager.userLongitude) { newLongitude in
+                guard let long = newLongitude else { return }
+                userSide = long > centerLongitude ? "East" : "West"
+            }
         }
     }
 }
 
+// מסך הכנסת שם
 struct NameInputView: View {
     @Binding var name: String
     @Environment(\.dismiss) var dismiss
