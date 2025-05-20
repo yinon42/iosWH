@@ -19,6 +19,7 @@ struct VictoryView: View {
 
             Spacer()
 
+            // כפתור: שחק שוב
             Button(action: {
                 onPlayAgain()
             }) {
@@ -30,6 +31,7 @@ struct VictoryView: View {
                     .cornerRadius(10)
             }
 
+            // כפתור: חזרה לתפריט
             Button(action: {
                 onBackToMenu()
             }) {
@@ -44,5 +46,16 @@ struct VictoryView: View {
             Spacer()
         }
         .padding()
+    }
+}
+
+struct VictoryView_Previews: PreviewProvider {
+    static var previews: some View {
+        VictoryView(
+            winnerName: "Gabi",
+            winnerScore: 10,
+            onPlayAgain: {},
+            onBackToMenu: {}
+        )
     }
 }
