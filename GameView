@@ -6,63 +6,77 @@ struct GameView: View {
     @State private var playerScore = 0
     @State private var pcScore = 0
     @State private var currentRound = 0
-    @State private var playerCard = "back"
-    @State private var pcCard = "back"
-    @State private var timerValue = 3
+
+    @State private var playerCardName = "back"
+    @State private var pcCardName = "back"
+
+    @State private var playerCardValue = 0
+    @State private var pcCardValue = 0
+
     @State private var gameEnded = false
     @State private var winnerText = ""
+    @State private var timerValue = 3
 
     let cardValues = Array(2...14)
+    let maxRounds = 10
 
     let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        VStack {
-            HStack {
-                VStack {
-                    Text(userName)
-                    Text("\(playerScore)")
-                        .font(.title)
-                        .bold()
-                }
-                Spacer()
-                VStack {
-                    Text("PC")
-                    Text("\(pcScore)")
-                        .font(.title)
-                        .bold()
-                }
-            }
-            .padding(.horizontal, 30)
-            .padding(.top)
-
-            Spacer()
-
-            HStack {
-                Image("card\(playerCard)")
-                    .resizable()
-                    .frame(width: 120, height: 180)
-                Spacer()
-                Image("card\(pcCard)")
-                    .resizable()
-                    .frame(width: 120, height: 180)
-            }
-            .padding(.horizontal, 40)
-
-            Spacer()
+        ZStack {
+            // רקע דיפולטיבי לפי Light/Dark Mode
 
             VStack {
-                Image(systemName: "timer")
-                Text("\(timerValue)")
-                    .font(.title)
-            }
+                // ניקוד
+                HStack {
+                    VStack {
+                        Text(userName)
+                        Text("\(playerScore)")
+                            .font(.title)
+                            .bold()
+                    }
+                    Spacer()
+                    VStack {
+                        Text("PC")
+                        Text("\(pcScore)")
+                            .font(.title)
+                            .bold()
+                    }
+                }
+                .padding(.horizontal, 30)
+                .padding(.top)
 
-            Spacer()
+                Spacer()
+
+                // קלפים עם ריחוף
+                HStack {
+                    cardView(cardName: playerCardName)
+                    Spacer()
+                    cardView(cardName: pcCardName)
+                }
+                .padding(.horizontal, 40)
+
+                Spacer()
+
+                VStack {
+                    Image(systemName: "timer")
+                    Text("\(timerValue)")
+                        .font(.title)
+                }
+
+                Spacer()
+            }
+            .padding()
+        }
+        .onAppear {
+            // הצגת גב בתחילת המשחק
+            playerCardName = "back"
+            pcCardName = "back"
         }
         .onReceive(timer) { _ in
             guard !gameEnded else { return }
 
-            if currentRound < 10 {
+            if currentRound < maxRounds {
                 playRound()
             } else {
                 endGame()
@@ -77,12 +91,29 @@ struct GameView: View {
         }
     }
 
+    func cardView(cardName: String) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+                .shadow(radius: 4)
+
+            Image(cardName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 150)
+        }
+        .frame(width: 120, height: 180)
+    }
+
     func playRound() {
         let playerValue = cardValues.randomElement() ?? 2
         let pcValue = cardValues.randomElement() ?? 2
 
-        playerCard = "\(playerValue)"
-        pcCard = "\(pcValue)"
+        playerCardValue = playerValue
+        pcCardValue = pcValue
+
+        playerCardName = "card\(playerValue)"
+        pcCardName = "card\(pcValue)"
 
         if playerValue > pcValue {
             playerScore += 1
@@ -95,6 +126,7 @@ struct GameView: View {
 
     func endGame() {
         gameEnded = true
+
         if playerScore > pcScore {
             winnerText = "\(userName) wins! 🎉"
         } else if pcScore > playerScore {
