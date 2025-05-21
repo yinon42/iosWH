@@ -33,6 +33,13 @@ struct ContentView: View {
                     .font(.subheadline)
                     .foregroundColor(.gray)
 
+                // הצגת קואורדינטה לצורכי בדיקה
+                if let longitude = locationManager.userLongitude {
+                    Text("Longitude: \(longitude)")
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                }
+
                 Spacer().frame(height: 30)
 
                 // תמונות חצאי כדור
@@ -109,12 +116,5 @@ struct NameInputView: View {
             .cornerRadius(10)
         }
         .padding()
-    }
-}
-
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
     }
 }
