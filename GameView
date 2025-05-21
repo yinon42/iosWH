@@ -66,8 +66,13 @@ struct GameView: View {
         }
         .padding()
         .onAppear {
-            determineUserSide()
             startCountdown()
+        }
+        .onChange(of: locationManager.userLongitude) { _ in
+            if let long = locationManager.userLongitude {
+                userSide = long > centerLongitude ? "East" : "West"
+                print("📍 userSide determined: \(userSide) | long: \(long)")
+            }
         }
         .fullScreenCover(isPresented: $showVictoryScreen) {
             VictoryView(
