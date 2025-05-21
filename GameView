@@ -2,19 +2,18 @@ import SwiftUI
 
 struct GameView: View {
     @AppStorage("userName") var userName: String = "Player"
-    @AppStorage("userSide") var userSide: String = "West" // "East" או "West"
-
     @Environment(\.dismiss) var dismiss
+
+    @State private var userSide: String = "Unknown"
+    @StateObject private var locationManager = LocationManager()
 
     @State private var playerScore = 0
     @State private var pcScore = 0
     @State private var currentRound = -1
-
     @State private var playerCardName = "back"
     @State private var pcCardName = "back"
     @State private var playerCardValue = 0
     @State private var pcCardValue = 0
-
     @State private var timerValue = 5
     @State private var isFirstRound = true
     @State private var countdownTimer: Timer?
@@ -23,61 +22,51 @@ struct GameView: View {
 
     let cardValues = Array(2...14)
     let maxRounds = 10
+    let centerLongitude = 34.817546
 
     var body: some View {
-        ZStack {
-            VStack {
-                // כותרת ניקוד
-                HStack {
-                    if userSide == "West" {
-                        playerColumn(name: userName, score: playerScore, highlight: highlightWinner == "player")
-                        Spacer()
-                        playerColumn(name: "PC", score: pcScore, highlight: highlightWinner == "pc")
-                    } else {
-                        playerColumn(name: "PC", score: pcScore, highlight: highlightWinner == "pc")
-                        Spacer()
-                        playerColumn(name: userName, score: playerScore, highlight: highlightWinner == "player")
-                    }
-                }
-                .padding(.horizontal, 30)
-                .padding(.top)
+        VStack {
+            // הצגת צד לפי מיקום
+            Text("You are on the \(userSide) Side")
+                .font(.subheadline)
+                .foregroundColor(.gray)
 
+            HStack {
+                playerColumn(name: userName, score: playerScore, highlight: highlightWinner == "player")
                 Spacer()
-
-                // קלפים
-                HStack {
-                    if userSide == "West" {
-                        cardView(cardName: playerCardName)
-                        Spacer()
-                        cardView(cardName: pcCardName)
-                    } else {
-                        cardView(cardName: pcCardName)
-                        Spacer()
-                        cardView(cardName: playerCardName)
-                    }
-                }
-                .padding(.horizontal, 40)
-
-                Spacer()
-
-                // טיימר וסיבוב
-                VStack(spacing: 8) {
-                    Image(systemName: "timer")
-                    Text("\(timerValue)")
-                        .font(.title)
-
-                    if currentRound >= 0 {
-                        Text("ROUND \(min(currentRound + 1, maxRounds))/\(maxRounds)")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                Spacer()
+                playerColumn(name: "PC", score: pcScore, highlight: highlightWinner == "pc")
             }
-            .padding()
+            .padding(.horizontal, 30)
+            .padding(.top)
+
+            Spacer()
+
+            HStack {
+                cardView(cardName: playerCardName)
+                Spacer()
+                cardView(cardName: pcCardName)
+            }
+            .padding(.horizontal, 40)
+
+            Spacer()
+
+            VStack(spacing: 8) {
+                Image(systemName: "timer")
+                Text("\(timerValue)")
+                    .font(.title)
+
+                if currentRound >= 0 {
+                    Text("ROUND \(min(currentRound + 1, maxRounds))/\(maxRounds)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            Spacer()
         }
+        .padding()
         .onAppear {
+            determineUserSide()
             startCountdown()
         }
         .fullScreenCover(isPresented: $showVictoryScreen) {
@@ -90,7 +79,17 @@ struct GameView: View {
         }
     }
 
-    // הצגת שחקן עם ניקוד
+    func determineUserSide() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            if let long = locationManager.userLongitude {
+                userSide = long > centerLongitude ? "East" : "West"
+                print("📍 Side determined: \(userSide) | Long: \(long)")
+            } else {
+                userSide = "Unknown"
+            }
+        }
+    }
+
     func playerColumn(name: String, score: Int, highlight: Bool) -> some View {
         VStack {
             Text(name)
@@ -102,7 +101,6 @@ struct GameView: View {
         }
     }
 
-    // תצוגת קלף
     func cardView(cardName: String) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
@@ -117,7 +115,6 @@ struct GameView: View {
         .frame(width: 120, height: 180)
     }
 
-    // טיימר סופר לאחור
     func startCountdown() {
         timerValue = isFirstRound ? 5 : 3
         countdownTimer?.invalidate()
@@ -132,7 +129,6 @@ struct GameView: View {
         }
     }
 
-    // הפעלת סיבוב חדש
     func showNextRound() {
         if (currentRound + 1) >= maxRounds {
             endGame()
@@ -144,7 +140,6 @@ struct GameView: View {
 
         playerCardValue = playerValue
         pcCardValue = pcValue
-
         playerCardName = "card\(playerValue)"
         pcCardName = "card\(pcValue)"
         highlightWinner = nil
@@ -153,7 +148,6 @@ struct GameView: View {
         isFirstRound = false
         startCountdown()
 
-        // השהיה ואז עדכון ניקוד
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             withAnimation(.easeIn(duration: 0.4)) {
                 if playerValue > pcValue {
@@ -167,13 +161,11 @@ struct GameView: View {
         }
     }
 
-    // סיום משחק
     func endGame() {
         countdownTimer?.invalidate()
         showVictoryScreen = true
     }
 
-    // איפוס
     func resetGame() {
         playerScore = 0
         pcScore = 0
@@ -183,10 +175,10 @@ struct GameView: View {
         pcCardName = "back"
         highlightWinner = nil
         showVictoryScreen = false
+        determineUserSide()
         startCountdown()
     }
 
-    // קביעת מנצח
     func getWinnerName() -> String {
         if playerScore > pcScore {
             return userName
