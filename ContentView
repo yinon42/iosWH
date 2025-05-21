@@ -2,20 +2,20 @@ import SwiftUI
 
 struct ContentView: View {
     @AppStorage("userName") var userName: String = ""
-    @AppStorage("userSide") var userSide: String = "West" // East או West
+    @AppStorage("userSide") var userSide: String = "West"
+    @AppStorage("lastLongitude") var lastLongitude: Double = 0.0
 
     @State private var showNameInput = false
     @State private var navigateToGame = false
     @StateObject private var locationManager = LocationManager()
 
-    let centerLongitude = 34.817546 // נקודת האמצע בין מזרח למערב
+    let centerLongitude = 34.817546
 
     var body: some View {
         NavigationStack {
             VStack {
                 Spacer().frame(height: 40)
 
-                // כפתור הכנסת שם
                 Button("Insert name") {
                     showNameInput = true
                 }
@@ -24,25 +24,31 @@ struct ContentView: View {
 
                 Spacer().frame(height: 10)
 
-                // ברכת שלום
                 Text("Hi \(userName.isEmpty ? "Guest" : userName)")
                     .font(.title)
 
-                // הצגת צד לפי מיקום
                 Text("You are on the \(userSide) Side")
                     .font(.subheadline)
                     .foregroundColor(.gray)
 
-                // הצגת קואורדינטה לצורכי בדיקה
-                if let longitude = locationManager.userLongitude {
-                    Text("Longitude: \(longitude)")
-                        .font(.caption2)
-                        .foregroundColor(.gray)
+                // תצוגת קואורדינטות
+                VStack(spacing: 4) {
+                    if let long = locationManager.userLongitude {
+                        Text("📍 Current Longitude: \(long)")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                        Text("💾 Saved Longitude: \(lastLongitude)")
+                            .font(.caption2)
+                            .foregroundColor(.blue)
+                    } else {
+                        Text("⚠️ No location available")
+                            .font(.caption2)
+                            .foregroundColor(.red)
+                    }
                 }
 
                 Spacer().frame(height: 30)
 
-                // תמונות חצאי כדור
                 HStack {
                     VStack {
                         Image("earth_left")
@@ -64,7 +70,6 @@ struct ContentView: View {
 
                 Spacer()
 
-                // כפתור START
                 Button("START") {
                     navigateToGame = true
                 }
@@ -83,6 +88,7 @@ struct ContentView: View {
             .onChange(of: locationManager.userLongitude) {
                 if let long = locationManager.userLongitude {
                     userSide = long > centerLongitude ? "East" : "West"
+                    print("✅ userSide set to: \(userSide) | long: \(long)")
                 }
             }
             .navigationDestination(isPresented: $navigateToGame) {
@@ -92,7 +98,6 @@ struct ContentView: View {
     }
 }
 
-// מסך הכנסת שם
 struct NameInputView: View {
     @Binding var name: String
     @Environment(\.dismiss) var dismiss
