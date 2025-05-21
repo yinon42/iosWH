@@ -2,14 +2,8 @@ import SwiftUI
 
 struct ContentView: View {
     @AppStorage("userName") var userName: String = ""
-    @AppStorage("userSide") var userSide: String = "West"
-    @AppStorage("lastLongitude") var lastLongitude: Double = 0.0
-
     @State private var showNameInput = false
     @State private var navigateToGame = false
-    @StateObject private var locationManager = LocationManager()
-
-    let centerLongitude = 34.817546
 
     var body: some View {
         NavigationStack {
@@ -27,25 +21,9 @@ struct ContentView: View {
                 Text("Hi \(userName.isEmpty ? "Guest" : userName)")
                     .font(.title)
 
-                Text("You are on the \(userSide) Side")
+                Text("Tap START to determine your side")
                     .font(.subheadline)
                     .foregroundColor(.gray)
-
-                // תצוגת קואורדינטות
-                VStack(spacing: 4) {
-                    if let long = locationManager.userLongitude {
-                        Text("📍 Current Longitude: \(long)")
-                            .font(.caption2)
-                            .foregroundColor(.green)
-                        Text("💾 Saved Longitude: \(lastLongitude)")
-                            .font(.caption2)
-                            .foregroundColor(.blue)
-                    } else {
-                        Text("⚠️ No location available")
-                            .font(.caption2)
-                            .foregroundColor(.red)
-                    }
-                }
 
                 Spacer().frame(height: 30)
 
@@ -84,12 +62,6 @@ struct ContentView: View {
             .padding()
             .sheet(isPresented: $showNameInput) {
                 NameInputView(name: $userName)
-            }
-            .onChange(of: locationManager.userLongitude) {
-                if let long = locationManager.userLongitude {
-                    userSide = long > centerLongitude ? "East" : "West"
-                    print("✅ userSide set to: \(userSide) | long: \(long)")
-                }
             }
             .navigationDestination(isPresented: $navigateToGame) {
                 GameView()
