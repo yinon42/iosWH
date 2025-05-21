@@ -5,13 +5,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     @Published var userLongitude: Double? = nil
 
-    // שמירה באחסון קבוע
-    @AppStorage("lastLongitude") var lastLongitude: Double = 0.0
-
     override init() {
         super.init()
         manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.requestWhenInUseAuthorization()
         manager.startUpdatingLocation()
     }
@@ -20,9 +16,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let location = locations.first else { return }
         let long = location.coordinate.longitude
         print("📍 Got longitude: \(long)")
+
         DispatchQueue.main.async {
             self.userLongitude = long
-            self.lastLongitude = long
+            // שמירה ל־UserDefaults (לשימוש ב־@AppStorage)
+            UserDefaults.standard.set(long, forKey: "lastLongitude")
         }
     }
 }
