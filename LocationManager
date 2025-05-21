@@ -10,6 +10,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.delegate = self
         manager.requestWhenInUseAuthorization()
 
+        // הפעלה קלה מאוחרת – נותנת זמן לבחירת מיקום בסימולטור
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             self.manager.startUpdatingLocation()
         }
@@ -17,8 +18,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else { return }
+        let long = location.coordinate.longitude
+        print("📍 GOT LONGITUDE: \(long)")
+
         DispatchQueue.main.async {
-            self.userLongitude = location.coordinate.longitude
+            self.userLongitude = long
         }
     }
 }
