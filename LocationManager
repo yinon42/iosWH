@@ -9,18 +9,16 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         super.init()
         manager.delegate = self
         manager.requestWhenInUseAuthorization()
-        manager.startUpdatingLocation()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.manager.startUpdatingLocation()
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else { return }
-        let long = location.coordinate.longitude
-        print("📍 Got longitude: \(long)")
-
         DispatchQueue.main.async {
-            self.userLongitude = long
-            // שמירה ל־UserDefaults (לשימוש ב־@AppStorage)
-            UserDefaults.standard.set(long, forKey: "lastLongitude")
+            self.userLongitude = location.coordinate.longitude
         }
     }
 }
