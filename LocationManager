@@ -8,21 +8,31 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     override init() {
         super.init()
         manager.delegate = self
+        print("📡 LocationManager initialized – requesting location access")
+
         manager.requestWhenInUseAuthorization()
 
-        // הפעלה קלה מאוחרת – נותנת זמן לבחירת מיקום בסימולטור
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            print("📍 Starting location updates...")
             self.manager.startUpdatingLocation()
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.first else { return }
+        guard let location = locations.first else {
+            print("⚠️ No location data received")
+            return
+        }
+
         let long = location.coordinate.longitude
-        print("📍 GOT LONGITUDE: \(long)")
+        print("📍 Location received: longitude = \(long)")
 
         DispatchQueue.main.async {
             self.userLongitude = long
         }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("❌ Failed to get location: \(error.localizedDescription)")
     }
 }
