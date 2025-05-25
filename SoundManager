@@ -2,20 +2,37 @@ import AVFoundation
 
 class SoundManager {
     static let shared = SoundManager()
+
     private var player: AVAudioPlayer?
+    private var backgroundPlayer: AVAudioPlayer?
 
     func playSound(named name: String) {
         guard let url = Bundle.main.url(forResource: name, withExtension: "mp3") else {
-            print("⚠️ Sound file \(name).mp3 not found")
+            print("❌ Sound \(name).mp3 not found")
             return
         }
 
         do {
             player = try AVAudioPlayer(contentsOf: url)
-            player?.prepareToPlay()
             player?.play()
         } catch {
-            print("⚠️ Failed to play sound: \(error.localizedDescription)")
+            print("⚠️ Could not play \(name): \(error.localizedDescription)")
         }
+    }
+
+    func playBackgroundMusic() {
+        guard let url = Bundle.main.url(forResource: "game_background_music", withExtension: "mp3") else { return }
+
+        do {
+            backgroundPlayer = try AVAudioPlayer(contentsOf: url)
+            backgroundPlayer?.numberOfLoops = -1
+            backgroundPlayer?.play()
+        } catch {
+            print("⚠️ Background music error: \(error.localizedDescription)")
+        }
+    }
+
+    func stopBackgroundMusic() {
+        backgroundPlayer?.stop()
     }
 }
